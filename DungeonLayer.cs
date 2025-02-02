@@ -15,17 +15,20 @@ public partial class DungeonLayer : TileMapLayer
 	public int MaxY = 40;
 	[ExportGroup("Rooms")]
 	[Export]
-	public int MinRooms = 1;
+	public int RoomDensity = 8;
 	[Export]
-	public int MaxRooms = 10;
+	public int MinRooms = 2;
 	[Export]
-	public int RoomMaxX = 10;
+	public int MaxRooms = 36;
 	[Export]
-	public int RoomMaxY = 10;
+	public int RoomMaxX = 14;
+	[Export]
+	public int RoomMaxY = 6;
 	
 	public RandomNumberGenerator RNG = new RandomNumberGenerator();
 	private Vector2I AtlasDirt = new Vector2I(1,1);
 	private Vector2I AtlasGrass = new Vector2I(4,0);
+	private Vector2I AtlasStone = new Vector2I(3,4);
 	
 	private LineEdit SeedInput;
 	
@@ -76,7 +79,16 @@ public partial class DungeonLayer : TileMapLayer
 		{
 			for( int CurrentY = 0; CurrentY < MaxY; CurrentY++)
 			{
-				this.SetCell(new Vector2I(CurrentX,CurrentY), 0, Tile, 0);
+				if(CurrentX == 0 || CurrentY == 0 || 
+				CurrentX == MaxX -1 || CurrentY == MaxY -1 ||
+				CurrentX % (RoomDensity * 2) == 0 || CurrentY % (RoomDensity) == 0)
+				{
+					this.SetCell(new Vector2I(CurrentX,CurrentY), 0, AtlasStone, 0);
+				}
+				else
+				{
+					this.SetCell(new Vector2I(CurrentX,CurrentY), 0, Tile, 0);
+				}
 			}
 		}
 		GD.Print("Grid Filled!");
