@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="DungeonPrefab" load_steps=2 format=3 uid="uid://cnd60rydx76ok"]
 
-[ext_resource type="Script" uid="uid://cdb62x4wciwuj" path="res://DungeonTypes/Class/DungeonTypePrefab.cs" id="1_ahabv"]
+[ext_resource type="Script" uid="uid://cdb62x4wciwuj" path="res://Resources/DungeonTypes/Class/DungeonTypePrefab.cs" id="1_ahabv"]
 
 [resource]
 script = ExtResource("1_ahabv")

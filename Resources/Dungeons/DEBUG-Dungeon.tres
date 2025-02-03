@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="DungeonPrefab" load_steps=5 format=3 uid="uid://0wj3wetn16sg"]
 
-[ext_resource type="Script" uid="uid://b6hovb0gjxduv" path="res://Dungeons/Class/DungeonPrefab.cs" id="1_8y8jw"]
-[ext_resource type="Resource" uid="uid://drwsodb8einee" path="res://DungeonTypes/DungeonSmall.tres" id="1_t8v6v"]
-[ext_resource type="TileSet" uid="uid://chqfhjwp77qs1" path="res://TileSets/DEBUG-Tileset.tres" id="2_it3lc"]
+[ext_resource type="Script" uid="uid://b6hovb0gjxduv" path="res://Resources/Dungeons/Class/DungeonPrefab.cs" id="1_8y8jw"]
+[ext_resource type="Resource" uid="uid://drwsodb8einee" path="res://Resources/DungeonTypes/DungeonSmall.tres" id="1_t8v6v"]
+[ext_resource type="TileSet" uid="uid://chqfhjwp77qs1" path="res://Resources/TileSets/DEBUG-Tileset.tres" id="2_it3lc"]
 [ext_resource type="TileSet" uid="uid://cbl4bbbuhv6ds" path="res://DEBUG-Tileset-Yellow.tres" id="3_it3lc"]
 
 [resource]
@@ -17,4 +17,5 @@ WeatherChance = 25
 Tilesets = Array[TileSet]([ExtResource("2_it3lc"), ExtResource("3_it3lc")])
 TilesetSwap = true
 TilesetSwapFloor = 5
+RoomDensity = 6
 metadata/_custom_type_script = ExtResource("1_8y8jw")

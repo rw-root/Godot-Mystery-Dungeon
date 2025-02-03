@@ -1,8 +1,8 @@
 [gd_scene load_steps=7 format=3 uid="uid://dfajwuoau7lbq"]
 
-[ext_resource type="TileSet" uid="uid://chqfhjwp77qs1" path="res://TileSets/DEBUG-Tileset.tres" id="1_efxa6"]
+[ext_resource type="TileSet" uid="uid://chqfhjwp77qs1" path="res://Resources/TileSets/DEBUG-Tileset.tres" id="1_efxa6"]
 [ext_resource type="Script" uid="uid://01am813t4r1w" path="res://DungeonLayer.cs" id="2_h2yge"]
-[ext_resource type="Resource" uid="uid://0wj3wetn16sg" path="res://Dungeons/DEBUG-Dungeon.tres" id="3_h2yge"]
+[ext_resource type="Resource" uid="uid://0wj3wetn16sg" path="res://Resources/Dungeons/DEBUG-Dungeon.tres" id="3_h2yge"]
 
 [sub_resource type="SystemFont" id="SystemFont_0xm2m"]
 

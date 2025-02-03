@@ -1,5 +1,7 @@
 using Godot;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 
 public partial class DungeonLayer : TileMapLayer
 {
@@ -34,6 +36,7 @@ public partial class DungeonLayer : TileMapLayer
 	
 	public int GridSizeX;
 	public int GridSizeY;
+	public List<GridTile> GridTiles;
 	
 	public RandomNumberGenerator RNG = new RandomNumberGenerator();
 	private Vector2I AtlasDirt = new Vector2I(1,1);
@@ -54,6 +57,7 @@ public partial class DungeonLayer : TileMapLayer
 		FloorLabel = GetNode<Label>("%FloorLabel");
 		FloorLabel.Text = "" + Floor;
 		
+		
 		GenerateDungeon();
 	}
 	
@@ -72,6 +76,8 @@ public partial class DungeonLayer : TileMapLayer
 		GD.Print("Generation Seed: " + RNG.Seed);
 		Seed = RNG.Seed;
 		SeedInput.Text = Seed.ToString();
+		
+		GridTiles = new List<GridTile>();
 		
 		// Set Tileset for current Floor
 		if(Floor >= Dungeon.TilesetSwapFloor && Dungeon.TilesetSwap)
@@ -109,13 +115,16 @@ public partial class DungeonLayer : TileMapLayer
 		// Start Generation with resetting the Grid
 		FillGrid(AtlasGrass);
 		
-		/*Start Generating the Rooms
+		// Get all the valid GridTiles
+		GetValidGridTiles();
+		
+		//Start Generating the Rooms
 		if(GenerateRooms(MinRooms, MaxRooms) == false)
 		{
 			GD.Print("Rooms could not be Generated, Try Again!");
 			GD.Print("Initial Dungeon Generation Aborted!");
 			return;
-		}*/
+		}
 		GetNode<Label>("%InfoText").Text = "---> Seed: " + Seed + " --- Rooms: " + GeneratedRooms + " <---";
 		GD.Print("Initial Dungeon Generation Complete!");
 		return;
@@ -143,6 +152,31 @@ public partial class DungeonLayer : TileMapLayer
 		return;
 	}
 	
+	private void GetValidGridTiles()
+	{
+		int StartX = 0 + Dungeon.DungeonType.CoverageOffsetX;
+		int StartY = 0 + Dungeon.DungeonType.CoverageOffsetY;
+		
+		for(int GridCurrentX = 0; GridCurrentX < MaxX; GridCurrentX += GridSizeX)
+		{
+			for(int GridCurrentY = 0; GridCurrentY < MaxY; GridCurrentY += GridSizeY)
+			{
+				if(CheckArea(new Vector2I(GridCurrentX + 1, GridCurrentY + 1), new Vector2I(GridCurrentX + GridSizeX - 1, GridCurrentY + GridSizeY - 1), TilesetAtlas))
+				{
+					GridTile Tile = new GridTile();
+					Tile.SetGridTile(EGridTileType.EMPTY, false, new Vector2I(GridCurrentX + 1, GridCurrentY + 1), new Vector2I(GridCurrentX + GridSizeX - 1, GridCurrentY + GridSizeY - 1));
+					GridTiles.Add(Tile);
+				}
+			}
+		}
+		int ForEachI = 0;
+		foreach(GridTile Tile in GridTiles)
+		{
+			GD.Print("Tile " + ForEachI + " is from: X: " + Tile.Start.X + " Y: " + Tile.Start.Y + " --- To: X: " + Tile.End.X + " Y: " + Tile.End.Y);
+			ForEachI++;
+		}
+	}
+	
 	private bool GenerateRooms(int MinAmount, int MaxAmount)
 	{
 		int RoomAmount = Dungeon.RoomDensity + RNG.RandiRange(0, 2);
@@ -150,29 +184,27 @@ public partial class DungeonLayer : TileMapLayer
 		int Tries = 0;
 		int RoomsPlaced = 0;
 		
-		for(RoomsPlaced = 0; RoomsPlaced < RoomAmount; RoomsPlaced++)
+		foreach(GridTile Tile in GridTiles)
 		{
-			GD.Print("RoomsPlaced = " + RoomsPlaced);
-			
-			int RoomX = RNG.RandiRange(4, RoomMaxX);
-			int RoomY = RNG.RandiRange(4, RoomMaxY);
-			
-			int RoomTryX = RNG.RandiRange(1, MaxX - (RoomX + 1));
-			int RoomTryY = RNG.RandiRange(1, MaxY - (RoomY + 1));
-			
-			if(Tries >= RoomAmount * 2)
+			int RoomPlacementX = RNG.RandiRange(4, Tile.End.X - Tile.Start.X - 2);
+			int RoomPlacementY = RNG.RandiRange(4, Tile.End.Y - Tile.Start.Y - 2);
+			if(RoomPlacementX * RoomPlacementY < AnchorThreshhold)
 			{
-				GD.Print("Ran out of RoomPlacement Tries...");
-				return false;
+				RoomPlacementX = 1;
+				RoomPlacementY = 1;
+				Tile.Type = EGridTileType.ANCHOR;
 			}
 			
-			if(PlaceRoom(new Vector2I(RoomTryX, RoomTryY), RoomX, RoomY) == false)
+			int RoomStartX = RNG.RandiRange(Tile.Start.X, Tile.End.X - RoomPlacementX);
+			int RoomStartY = RNG.RandiRange(Tile.Start.Y, Tile.End.Y - RoomPlacementY);
+			
+			if(PlaceRoom(new Vector2I(RoomStartX, RoomStartY), RoomPlacementX, RoomPlacementY))
 			{
-				Tries++;
-				RoomsPlaced--;
-				GD.Print("Trying to place a Room Failed...");
+				RoomsPlaced++;
+				GD.Print("Placed Room");
 			}
 		}
+		
 		GeneratedRooms = RoomsPlaced;
 		GD.Print(RoomsPlaced + "/" + RoomAmount + " Rooms have been Placed");
 		return true;
