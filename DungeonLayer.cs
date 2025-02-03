@@ -6,8 +6,10 @@ using System.Collections.Generic;
 public partial class DungeonLayer : TileMapLayer
 {
 	[ExportGroup("Dungeon Prefab")]
+	// Sets the Dungeon we are generating Floors for
 	[Export]
 	private DungeonPrefab Dungeon;
+	// Current Floor we are Generating
 	[Export]
 	private int Floor = 1;
 	[ExportGroup("Seed")]
@@ -16,54 +18,74 @@ public partial class DungeonLayer : TileMapLayer
 	[Export]
 	public ulong Seed;
 	[ExportGroup("Grid")]
+	// Sets Dimensions of the TileMap Grid to Generate
 	[Export]
 	public int MaxX = 56;
 	[Export]
 	public int MaxY = 32;
 	[ExportGroup("Rooms")]
+	// is supposed to Determine how many Rooms are on a Floor, 
+	//ToDo: Move into the Dungeon Prefab and maybe 
+	//		make it a curve for when its supposed to get more over Floors
 	[Export]
 	public int RoomDensity = 6;
+	// Just a General Rule of how many Rooms are Generated
 	[Export]
 	public int MinRooms = 2;
 	[Export]
 	public int MaxRooms = 36;
+	// Redundand ToDo: remove completely
 	[Export]
 	public int RoomMaxX = 14;
+	// Redundand ToDo: remove completely
 	[Export]
 	public int RoomMaxY = 6;
+	// minimum size of rooms are 4x4 and they are currently turned into Anchors
+	// ToDo: 	Split Room and Anchor Placers, still place them both in the GenerateRooms() step
+	// 			But combine it with Generating Rooms up to the designated Amount
 	[Export]
 	public int AnchorThreshhold = 20;
 	
+	// The Size of the Cells in the Room Grid
+	// ToDo: Rename so its more obvious... but the whole project could use that
 	public int GridSizeX;
 	public int GridSizeY;
+	// A List of All Cells Valid for Room/Anchor Generation
 	public List<GridTile> GridTiles;
 	
+	// For all the RNG this is gonna take...
 	public RandomNumberGenerator RNG = new RandomNumberGenerator();
+	
+	// Some Tiles Hardcoded because its a Placeholder SpriteSheet
+	// ToDo: Maybe make it Dynamic? i seriously have no clue...
 	private Vector2I AtlasDirt = new Vector2I(1,1);
 	private Vector2I AtlasGrass = new Vector2I(4,0);
 	private Vector2I AtlasStone = new Vector2I(3,4);
 	
+	// Nodes i need for Displaying UI
 	private LineEdit SeedInput;
 	private Label FloorLabel;
 	
+	// Variables i wanted outside the functions for some reason
 	private int GeneratedRooms;
 	private int TilesetAtlas;
 	
+	// Inisialisation of things
 	public override void _Ready()
 	{
-		//GD.Print("the int of " + DungeonLayout + " is: " + (int) DungeonLayout + "\n" + "the values are: " + DungeonTypes[(int) DungeonLayout].DensityX);
 		GetNode<CheckButton>("%UseSeedToggle").ButtonPressed = UseSeed;
 		SeedInput = GetNode<LineEdit>("%SeedInput");
 		FloorLabel = GetNode<Label>("%FloorLabel");
 		FloorLabel.Text = "" + Floor;
 		
-		
+		//Start First Generation Automagically
 		GenerateDungeon();
 	}
 	
 	// Generation Steps
 	public void GenerateDungeon()
 	{
+		// ToDo: Create Full Generation Loop
 		// Randomize
 		if(UseSeed == false)
 		{
@@ -125,11 +147,15 @@ public partial class DungeonLayer : TileMapLayer
 			GD.Print("Initial Dungeon Generation Aborted!");
 			return;
 		}
+		
+		GenerateHallways();
+		
 		GetNode<Label>("%InfoText").Text = "---> Seed: " + Seed + " --- Rooms: " + GeneratedRooms + " <---";
 		GD.Print("Initial Dungeon Generation Complete!");
 		return;
 	}
 	
+	// Fill the Tilemap with Tiles and Mark Cell Borders with Other Tiles, only for debugging ofc
 	private void FillGrid(Vector2I Tile)
 	{
 		for( int CurrentX = 0; CurrentX < MaxX ; CurrentX++)
@@ -152,6 +178,7 @@ public partial class DungeonLayer : TileMapLayer
 		return;
 	}
 	
+	// Fill List with the Grid Cells that are Completely Valid and can be used for Generation
 	private void GetValidGridTiles()
 	{
 		int StartX = 0 + Dungeon.DungeonType.CoverageOffsetX;
@@ -177,17 +204,18 @@ public partial class DungeonLayer : TileMapLayer
 		}
 	}
 	
+	// Loop Through GridTiles and place a Room or Anchor
+	// ToDo: Only Generate "RoomDesity + [0..2]" Rooms, Generate Anchors.
 	private bool GenerateRooms(int MinAmount, int MaxAmount)
 	{
 		int RoomAmount = Dungeon.RoomDensity + RNG.RandiRange(0, 2);
 		GD.Print("Amount of Rooms: " + RoomAmount);
-		int Tries = 0;
 		int RoomsPlaced = 0;
 		
 		foreach(GridTile Tile in GridTiles)
 		{
-			int RoomPlacementX = RNG.RandiRange(4, Tile.End.X - Tile.Start.X - 2);
-			int RoomPlacementY = RNG.RandiRange(4, Tile.End.Y - Tile.Start.Y - 2);
+			int RoomPlacementX = RNG.RandiRange(4, Tile.End.X - Tile.Start.X);
+			int RoomPlacementY = RNG.RandiRange(4, Tile.End.Y - Tile.Start.Y);
 			if(RoomPlacementX * RoomPlacementY < AnchorThreshhold)
 			{
 				RoomPlacementX = 1;
@@ -200,8 +228,15 @@ public partial class DungeonLayer : TileMapLayer
 			
 			if(PlaceRoom(new Vector2I(RoomStartX, RoomStartY), RoomPlacementX, RoomPlacementY))
 			{
-				RoomsPlaced++;
-				GD.Print("Placed Room");
+				if(RoomPlacementX != 1 && RoomPlacementY != 1)
+				{
+					RoomsPlaced++;
+					GD.Print("Placed Room");
+				}
+				else
+				{
+					GD.Print("Placed Anchor");
+				}
 			}
 		}
 		
@@ -210,6 +245,21 @@ public partial class DungeonLayer : TileMapLayer
 		return true;
 	}
 	
+	// Connect Rooms and Anchors with Hallways
+	// ToDo: See Above
+	public void GenerateHallways()
+	{
+		GD.Print("" + (GridSizeX * GridSizeY) + " --- " + GridTiles[0].Start.X);
+	}
+	
+	// Place Hallway between Two points either in L shape or Z shape
+	// ToDo: See Above
+	private void PlaceHallway(Vector2I Start, Vector2I End)
+	{
+		
+	}
+	
+	// Place a room of Dimensions (RoomX, RoomY) at the Coordinates RoomCoordinate
 	private bool PlaceRoom(Vector2I RoomCoordinate ,int RoomX ,int RoomY)
 	{
 		if(CheckArea(RoomCoordinate, new Vector2I(RoomCoordinate.X + RoomX,RoomCoordinate.Y + RoomY), TilesetAtlas))
@@ -228,6 +278,7 @@ public partial class DungeonLayer : TileMapLayer
 		return false;
 	}
 	
+	// Check if Area from Start(X,Y) to End(X,Y) is inside the Grid
 	private bool CheckArea(Vector2I Start, Vector2I End, int CheckFor)
 	{
 		int StartX = Start.X;

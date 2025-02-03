@@ -104,6 +104,7 @@ text = "+"
 tile_set = ExtResource("1_efxa6")
 script = ExtResource("2_h2yge")
 Dungeon = ExtResource("3_h2yge")
+AnchorThreshhold = 19
 
 [connection signal="pressed" from="Camera2D/UserInterface/Button" to="TileMapLayer" method="GenerateDungeon"]
 [connection signal="text_changed" from="Camera2D/UserInterface/SeedInput" to="TileMapLayer" method="SetSeed"]

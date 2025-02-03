@@ -1,21 +1,21 @@
 [gd_resource type="Resource" script_class="DungeonPrefab" load_steps=5 format=3 uid="uid://0wj3wetn16sg"]
 
-[ext_resource type="Script" uid="uid://b6hovb0gjxduv" path="res://Resources/Dungeons/Class/DungeonPrefab.cs" id="1_8y8jw"]
-[ext_resource type="Resource" uid="uid://drwsodb8einee" path="res://Resources/DungeonTypes/DungeonSmall.tres" id="1_t8v6v"]
-[ext_resource type="TileSet" uid="uid://chqfhjwp77qs1" path="res://Resources/TileSets/DEBUG-Tileset.tres" id="2_it3lc"]
-[ext_resource type="TileSet" uid="uid://cbl4bbbuhv6ds" path="res://DEBUG-Tileset-Yellow.tres" id="3_it3lc"]
+[ext_resource type="Resource" uid="uid://bhraaiuntom0u" path="res://Resources/DungeonTypes/DungeonLarge.tres" id="1_2ppb5"]
+[ext_resource type="TileSet" uid="uid://chqfhjwp77qs1" path="res://Resources/TileSets/DEBUG-Tileset.tres" id="2_12hrj"]
+[ext_resource type="TileSet" uid="uid://cbl4bbbuhv6ds" path="res://DEBUG-Tileset-Yellow.tres" id="3_8p4hj"]
+[ext_resource type="Script" uid="uid://b6hovb0gjxduv" path="res://Resources/Dungeons/Class/DungeonPrefab.cs" id="4_i3txu"]
 
 [resource]
-script = ExtResource("1_8y8jw")
-DungeonType = ExtResource("1_t8v6v")
+script = ExtResource("4_i3txu")
+DungeonType = ExtResource("1_2ppb5")
 Floors = 10
 SecondaryGeneration = false
 SecondaryType = 0
 SpawnWeather = false
 Weather = 0
 WeatherChance = 25
-Tilesets = Array[TileSet]([ExtResource("2_it3lc"), ExtResource("3_it3lc")])
+Tilesets = Array[TileSet]([ExtResource("2_12hrj"), ExtResource("3_8p4hj")])
 TilesetSwap = true
 TilesetSwapFloor = 5
 RoomDensity = 6
-metadata/_custom_type_script = ExtResource("1_8y8jw")
+metadata/_custom_type_script = ExtResource("4_i3txu")
