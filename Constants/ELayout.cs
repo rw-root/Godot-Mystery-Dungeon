@@ -1,0 +1,12 @@
+public enum ELayout
+{
+	SMALL,
+	MEDIUM,
+	LARGE,
+	LINE,
+	CROSS,
+	BEETLE,
+	CROSSROADS,
+	OUTER_RING,
+	OUTER_ROOMS
+}

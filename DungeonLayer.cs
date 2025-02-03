@@ -3,6 +3,11 @@ using System;
 
 public partial class DungeonLayer : TileMapLayer
 {
+	[ExportGroup("Dungeon Prefab")]
+	[Export]
+	private DungeonPrefab Dungeon;
+	[Export]
+	private int Floor = 1;
 	[ExportGroup("Seed")]
 	[Export]
 	public bool UseSeed;
@@ -10,12 +15,12 @@ public partial class DungeonLayer : TileMapLayer
 	public ulong Seed;
 	[ExportGroup("Grid")]
 	[Export]
-	public int MaxX = 80;
+	public int MaxX = 56;
 	[Export]
-	public int MaxY = 40;
+	public int MaxY = 32;
 	[ExportGroup("Rooms")]
 	[Export]
-	public int RoomDensity = 8;
+	public int RoomDensity = 6;
 	[Export]
 	public int MinRooms = 2;
 	[Export]
@@ -24,6 +29,11 @@ public partial class DungeonLayer : TileMapLayer
 	public int RoomMaxX = 14;
 	[Export]
 	public int RoomMaxY = 6;
+	[Export]
+	public int AnchorThreshhold = 20;
+	
+	public int GridSizeX;
+	public int GridSizeY;
 	
 	public RandomNumberGenerator RNG = new RandomNumberGenerator();
 	private Vector2I AtlasDirt = new Vector2I(1,1);
@@ -31,13 +41,19 @@ public partial class DungeonLayer : TileMapLayer
 	private Vector2I AtlasStone = new Vector2I(3,4);
 	
 	private LineEdit SeedInput;
+	private Label FloorLabel;
 	
 	private int GeneratedRooms;
+	private int TilesetAtlas;
 	
 	public override void _Ready()
 	{
+		//GD.Print("the int of " + DungeonLayout + " is: " + (int) DungeonLayout + "\n" + "the values are: " + DungeonTypes[(int) DungeonLayout].DensityX);
 		GetNode<CheckButton>("%UseSeedToggle").ButtonPressed = UseSeed;
 		SeedInput = GetNode<LineEdit>("%SeedInput");
+		FloorLabel = GetNode<Label>("%FloorLabel");
+		FloorLabel.Text = "" + Floor;
+		
 		GenerateDungeon();
 	}
 	
@@ -55,19 +71,51 @@ public partial class DungeonLayer : TileMapLayer
 		}
 		GD.Print("Generation Seed: " + RNG.Seed);
 		Seed = RNG.Seed;
-		
 		SeedInput.Text = Seed.ToString();
+		
+		// Set Tileset for current Floor
+		if(Floor >= Dungeon.TilesetSwapFloor && Dungeon.TilesetSwap)
+		{
+			this.TileSet = Dungeon.Tilesets[1];
+			TilesetAtlas = 1;
+			GD.Print("ALTERNATE TILESET");
+		}
+		else
+		{
+			this.TileSet = Dungeon.Tilesets[0];
+			TilesetAtlas = 0;
+			GD.Print("STANDARD TILESET");
+		}
+		
+		// Set Size for Grid
+		if(Dungeon.DungeonType.FixTilesX)
+		{
+			GridSizeX = (int) Math.Floor((double) MaxX / Dungeon.DungeonType.TilesX);
+		}
+		else
+		{
+			GridSizeX = (int) Math.Floor((double) MaxX / RNG.RandiRange(2,7));
+		}
+		
+		if(Dungeon.DungeonType.FixTilesY)
+		{
+			GridSizeY = (int) Math.Floor((double) MaxY / Dungeon.DungeonType.TilesY);
+		}
+		else
+		{
+			GridSizeY = (int) Math.Floor((double) MaxY / RNG.RandiRange(2,4));
+		}
 		
 		// Start Generation with resetting the Grid
 		FillGrid(AtlasGrass);
 		
-		//Start Generating the Rooms
+		/*Start Generating the Rooms
 		if(GenerateRooms(MinRooms, MaxRooms) == false)
 		{
 			GD.Print("Rooms could not be Generated, Try Again!");
 			GD.Print("Initial Dungeon Generation Aborted!");
 			return;
-		}
+		}*/
 		GetNode<Label>("%InfoText").Text = "---> Seed: " + Seed + " --- Rooms: " + GeneratedRooms + " <---";
 		GD.Print("Initial Dungeon Generation Complete!");
 		return;
@@ -79,15 +127,15 @@ public partial class DungeonLayer : TileMapLayer
 		{
 			for( int CurrentY = 0; CurrentY < MaxY; CurrentY++)
 			{
-				if(CurrentX == 0 || CurrentY == 0 || 
-				CurrentX == MaxX -1 || CurrentY == MaxY -1 ||
-				CurrentX % (RoomDensity * 2) == 0 || CurrentY % (RoomDensity) == 0)
+				if(
+				CurrentX % GridSizeX == 0 || CurrentY % GridSizeY == 0 ||
+				CurrentX % GridSizeX == GridSizeX - 1 || CurrentY % GridSizeY == GridSizeY - 1)
 				{
-					this.SetCell(new Vector2I(CurrentX,CurrentY), 0, AtlasStone, 0);
+					this.SetCell(new Vector2I(CurrentX,CurrentY), TilesetAtlas, AtlasStone, 0);
 				}
 				else
 				{
-					this.SetCell(new Vector2I(CurrentX,CurrentY), 0, Tile, 0);
+					this.SetCell(new Vector2I(CurrentX,CurrentY), TilesetAtlas, Tile, 0);
 				}
 			}
 		}
@@ -97,7 +145,7 @@ public partial class DungeonLayer : TileMapLayer
 	
 	private bool GenerateRooms(int MinAmount, int MaxAmount)
 	{
-		int RoomAmount = RNG.RandiRange(MinAmount, MaxAmount);
+		int RoomAmount = Dungeon.RoomDensity + RNG.RandiRange(0, 2);
 		GD.Print("Amount of Rooms: " + RoomAmount);
 		int Tries = 0;
 		int RoomsPlaced = 0;
@@ -132,13 +180,13 @@ public partial class DungeonLayer : TileMapLayer
 	
 	private bool PlaceRoom(Vector2I RoomCoordinate ,int RoomX ,int RoomY)
 	{
-		if(CheckArea(RoomCoordinate, new Vector2I(RoomCoordinate.X + RoomX,RoomCoordinate.Y + RoomY)))
+		if(CheckArea(RoomCoordinate, new Vector2I(RoomCoordinate.X + RoomX,RoomCoordinate.Y + RoomY), TilesetAtlas))
 		{
 			for(int RoomPlacementX = 0; RoomPlacementX < RoomX; RoomPlacementX++)
 			{
 				for(int RoomPlacementY = 0; RoomPlacementY < RoomY; RoomPlacementY++)
 				{
-					this.SetCell(new Vector2I(RoomCoordinate.X + RoomPlacementX,RoomCoordinate.Y + RoomPlacementY), 0, AtlasDirt, 0);
+					this.SetCell(new Vector2I(RoomCoordinate.X + RoomPlacementX,RoomCoordinate.Y + RoomPlacementY), TilesetAtlas, AtlasDirt, 0);
 				}
 			}
 			GD.Print("Room Placed!");
@@ -148,7 +196,7 @@ public partial class DungeonLayer : TileMapLayer
 		return false;
 	}
 	
-	private bool CheckArea(Vector2I Start, Vector2I End, int CheckFor = 0)
+	private bool CheckArea(Vector2I Start, Vector2I End, int CheckFor)
 	{
 		int StartX = Start.X;
 		int StartY = Start.Y;
@@ -198,4 +246,32 @@ public partial class DungeonLayer : TileMapLayer
 	{
 		Seed = (ulong) UInt64.Parse(Value);
 	}
+	public int GetFloor()
+	{
+		return Floor;
+	}
+	public void SetFloor(int Value)
+	{
+		Floor = Value;
+		FloorLabel.Text = "" + Floor;
+	}
+	public void FloorUp()
+	{
+		if(Floor >= 999)
+		{
+			return;
+		}
+		Floor++;
+		FloorLabel.Text = "" + Floor;
+	}
+	public void FloorDown()
+	{
+		if(Floor <= 1)
+		{
+			return;
+		}
+		Floor--;
+		FloorLabel.Text = "" + Floor;
+	}
+	
 }

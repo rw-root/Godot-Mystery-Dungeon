@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DungeonTypePrefab" load_steps=2 format=3 uid="uid://dhg5rfvq81fg0"]
+
+[ext_resource type="Script" uid="uid://cdb62x4wciwuj" path="res://DungeonTypes/Class/DungeonTypePrefab.cs" id="1_l14r5"]
+
+[resource]
+script = ExtResource("1_l14r5")
+FixTilesX = true
+TilesX = 3
+FixTilesY = true
+TilesY = 3
+CoverageX = 100
+CoverageY = 25
+CoverageOffsetX = 0
+CoverageOffsetY = 1
+metadata/_custom_type_script = ExtResource("1_l14r5")

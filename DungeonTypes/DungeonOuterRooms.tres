@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="DungeonPrefab" load_steps=2 format=3 uid="uid://emsyvlja6lxi"]
+
+[ext_resource type="Script" uid="uid://cdb62x4wciwuj" path="res://DungeonTypes/Class/DungeonTypePrefab.cs" id="1_davow"]
+
+[resource]
+script = ExtResource("1_davow")
+FixDensityX = true
+DensityX = 4
+FixDensityY = false
+DensityY = 4
+metadata/_custom_type_script = ExtResource("1_davow")
