@@ -4,9 +4,9 @@
 
 [resource]
 script = ExtResource("1_ngv2w")
-FixTilesX = true
+FixTilesX = false
 TilesX = 7
-FixTilesY = true
+FixTilesY = false
 TilesY = 4
 CoverageX = 100
 CoverageY = 100
